@@ -151,9 +151,95 @@ const getIndex = async (req, res) => {
   res.json(files);
 };
 
+const putPublish = async (req, res) => {
+  const token = req.get('X-Token');
+
+  const userId = await redisClient.get(`auth_${token}`);
+
+  const user = await (await dbClient.usersCollection()).findOne({ _id: ObjectId(userId) });
+
+  if (!user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const fileId = req.params.id;
+  const file = await (await dbClient.filesCollection()).findOne({
+    _id: ObjectId(fileId), userId: user._id,
+  });
+
+  if (!file) {
+    res.status(404).json({ error: 'Not found' });
+    return;
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  const result = await (await dbClient.filesCollection()).updateOne({ _id: file._id }, {
+    $set: {
+      isPublic: true,
+    },
+  });
+
+  const updatedFile = await (await dbClient.filesCollection()).findOne({
+    _id: file._id, userId: file.userId,
+  });
+
+  res.status(200).json({
+    id: updatedFile._id,
+    userId: updatedFile.userId,
+    name: updatedFile.name,
+    type: updatedFile.type,
+    isPublic: updatedFile.isPublic,
+    parentId: updatedFile.parentId,
+  });
+};
+
+const putUnpublish = async (req, res) => {
+  const token = req.get('X-Token');
+
+  const userId = await redisClient.get(`auth_${token}`);
+
+  const user = await (await dbClient.usersCollection()).findOne({ _id: ObjectId(userId) });
+
+  if (!user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const fileId = req.params.id;
+  const file = await (await dbClient.filesCollection()).findOne({
+    _id: ObjectId(fileId), userId: user._id,
+  });
+
+  if (!file) {
+    res.status(404).json({ error: 'Not found' });
+    return;
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  const result = await (await dbClient.filesCollection()).updateOne({ _id: file._id }, {
+    $set: {
+      isPublic: false,
+    },
+  });
+
+  const updatedFile = await (await dbClient.filesCollection()).findOne({
+    _id: file._id, userId: file.userId,
+  });
+
+  res.status(200).json({
+    id: updatedFile._id,
+    userId: updatedFile.userId,
+    name: updatedFile.name,
+    type: updatedFile.type,
+    isPublic: updatedFile.isPublic,
+    parentId: updatedFile.parentId,
+  });
+};
+
 const FilesController = {
   postUpload,
   getShow,
   getIndex,
+  putPublish,
+  putUnpublish,
 };
 export default FilesController;
