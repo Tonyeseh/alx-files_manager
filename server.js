@@ -1,10 +1,13 @@
 import express from 'express';
 import router from './routes';
 
+const port = process.env.PORT || 5000;
+
 const app = express();
 
+app.use(express.json());
 app.use('/', router);
 
-app.listen(process.env.PORT || 5000, () => {
-  console.log('EXPRESS LISTENING');
+app.listen(port, () => {
+  console.log('EXPRESS LISTENING ON PORT', port);
 });
