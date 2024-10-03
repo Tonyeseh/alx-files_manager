@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
-const dataFolder = process.env.FOLDER_PATH || 'C:\\Users\\Tony\\Documents\\works\\alx\\alx-files_manager\\data_folder';
+const dataFolder = process.env.FOLDER_PATH || '/tmp/files_manager';
 async function postUpload(req, res) {
   try {
     const authToken = req.headers['x-token'];
